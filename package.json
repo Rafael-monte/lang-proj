@@ -1,0 +1,14 @@
+{
+  "name": "instance-js",
+  "version": "1.0.0",
+  "description": "New JS implementation based on instances",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Rafael Monteiro Zancanaro",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
