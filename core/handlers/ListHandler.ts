@@ -1,51 +1,59 @@
-import { List } from "../types/ArrayTypes/List";
 import {ArrayHomogeneity} from '../types/ArrayTypes/ArrayHomogeneity';
-export class ListHandler {
+import {BasicDatasetHandleOperations} from '../handlers/interfaces/BasicDatasetHandleOperations.interface'
+import { Dataset } from "../types/ArrayTypes/Dataset";
+import { List } from "../types/ArrayTypes/List";
+import { DatasetConvertable } from './DatasetConvertable';
+export class ListHandler extends DatasetConvertable<List<any>> implements BasicDatasetHandleOperations<List<any>> {
+    private static instance: ListHandler;
 
-    static AddElement(list: List, element:any) {
-        if (list.__type === ArrayHomogeneity.SAME_TYPE) {
-            if (list.__elements.length > 0 && typeof list.__elements[0] !== typeof element) {
-                throw new Error(`Tipos incompativeis (${typeof list.__elements[0]} | ${typeof element}),
-                se deseja alterar adicionar tipos diferentes, por favor, converta o tipo da lista para MIXED_TYPE
-                `)
-            }
+    public static getInstance(): ListHandler {
+        if (!ListHandler.instance) {
+            ListHandler.instance = new ListHandler();
         }
-        list.__elements.push(element);
+        return ListHandler.instance;
     }
 
-    static Reverse(list:List): void {
-        list.__elements = list.__elements.reverse();
-    }
-
-    static RemoveFirstElement(list: List, element:any) {
-        let index = this.__findIndex(list, element);
-        if (index !== -1) {
-            list.__elements.splice(index);
-        }
-    }
-
-    static GenerateInstance(homogeneity: ArrayHomogeneity): List {
-        let list: List = {
+    public Create(homogeneity: ArrayHomogeneity): List<any> {
+        let l : List<any> = {
             __elements: [],
-            __type: homogeneity
+            __homogeneity: homogeneity
         }
-        return list;
+        return l;
     }
-
-    static ShowElements(list: List): void {
-        console.log(list.__elements);
+    public DropDataset(dataset: Dataset<any>): void {
+       dataset.__elements = undefined;
+       dataset.__homogeneity = undefined;
+       dataset = null;
+       return;
     }
-
-    private static __findIndex(list: List, element:any): number {
-        for (let i = 0; i < list.__elements.length; i++) {
-            if (element === list.__elements[i]) {
-                return i;
+    public Select(condition: (param: any) => boolean, dataset: List<any>): Array<any> {
+        const result = [];
+        dataset.__elements.forEach(el => {
+            if (condition(el)) {
+                result.push(el);
             }
-        }
-        return -1;
+        })
+        return result;
+    }
+    public Update(operation: (param: any) => void, condition: (param: any) => boolean, dataset: List<any>): void {
+        let elements = this.Select(condition, dataset);
+        operation(elements);
+        dataset.__elements = elements;
+    }
+    public Delete(condition: (param: any) => boolean, dataset: List<any>): void {
+        let elements = this.Select(condition, dataset);
+        elements.forEach(el => {
+            dataset.__elements.splice(dataset.__elements.findIndex(element => element === el));
+        })
     }
 
-    static ConvertListType(list: List, type: ArrayHomogeneity) {
-        list.__type = type;
+
+    public Insert(dataset: List<any>, ...elements: any) {
+        elements.forEach(element => {
+            super.CheckTypesInDataset(dataset, element);
+        });
+        dataset.__elements.push(...elements);
     }
+
+
 }
